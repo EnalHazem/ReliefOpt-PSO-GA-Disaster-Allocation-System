@@ -3,11 +3,6 @@ from typing import Callable, Dict, List, Tuple
 import numpy as np
 
 
-# ---------------------------------------------------------------------------
-# Selection — picks one genome from a small pool using its fitness.
-# Lower fitness = better (we minimise).
-# ---------------------------------------------------------------------------
-
 def tournament_selection(pool: List[np.ndarray], fitness: np.ndarray,
                          rng: np.random.Generator, k: int = 3) -> np.ndarray:
     k = max(2, min(k, len(pool)))
@@ -24,10 +19,6 @@ def roulette_selection(pool: List[np.ndarray], fitness: np.ndarray,
     return pool[idx].copy()
 
 
-# ---------------------------------------------------------------------------
-# Crossover — combine two parent genomes into two children.
-# ---------------------------------------------------------------------------
-
 def whole_arithmetic_crossover(p1: np.ndarray, p2: np.ndarray,
                                rng: np.random.Generator,
                                alpha: float = 0.5) -> Tuple[np.ndarray, np.ndarray]:
@@ -42,15 +33,11 @@ def simple_arithmetic_crossover(p1: np.ndarray, p2: np.ndarray,
                                 alpha: float = 0.5) -> Tuple[np.ndarray, np.ndarray]:
     c1 = p1.copy()
     c2 = p2.copy()
-    k = int(rng.integers(1, len(p1)))   # cut-point in [1, n-1]
+    k = int(rng.integers(1, len(p1)))  
     c1[k:] = alpha * p1[k:] + (1.0 - alpha) * p2[k:]
     c2[k:] = (1.0 - alpha) * p1[k:] + alpha * p2[k:]
     return c1, c2
 
-
-# ---------------------------------------------------------------------------
-# Mutation — random perturbation to escape local optima.
-# ---------------------------------------------------------------------------
 
 def uniform_mutation(genome: np.ndarray, low: float, high: float,
                      rng: np.random.Generator,
@@ -76,11 +63,6 @@ def non_uniform_mutation(genome: np.ndarray, low: float, high: float,
     out = np.where(mask, perturbed, genome)
     return np.clip(out, low, high)
 
-
-# ---------------------------------------------------------------------------
-# Registries — short-name → function. Used by HybridPSOGASolver and the UI.
-# Signatures are unified so the solver can call any entry the same way.
-# ---------------------------------------------------------------------------
 
 SelectionFn = Callable[[List[np.ndarray], np.ndarray, np.random.Generator, int], np.ndarray]
 CrossoverFn = Callable[[np.ndarray, np.ndarray, np.random.Generator, float], Tuple[np.ndarray, np.ndarray]]
