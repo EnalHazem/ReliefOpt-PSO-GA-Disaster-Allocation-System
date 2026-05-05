@@ -12,8 +12,8 @@ from utils.diversity import population_diversity
 class GAConfig:
     pop_size: int = 30
     iterations: int = 100
-    pc: float = 0.8          # crossover probability
-    pm: float = 0.15         # mutation probability
+    pc: float = 0.8          
+    pm: float = 0.15         
     tournament_k: int = 3
     elite_count: int = 2
     selection: str = "tournament"
