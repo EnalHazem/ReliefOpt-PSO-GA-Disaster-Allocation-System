@@ -14,24 +14,24 @@ class HybridConfig:
     # Shared budget
     pop_size: int = 30
     iterations: int = 100
-    pso_fraction: float = 0.6       # 60% of budget → PSO, 40% → GA refinement
+    pso_fraction: float = 0.6       
 
-    # PSO params (passed through to PSOSolver)
+    
     w_max: float = 0.9
     w_min: float = 0.4
     c1: float = 1.5
     c2: float = 1.5
 
-    # GA params
-    pc: float = 0.8                 # crossover probability
-    pm: float = 0.15                # mutation probability
+    
+    pc: float = 0.8                
+    pm: float = 0.15                
     tournament_k: int = 3
-    elite_count: int = 2            # elitism: keep top N individuals
+    elite_count: int = 2            
 
-    # GA operator choice — must match keys in core.ga.operators registries.
-    selection: str = "tournament"   # tournament | roulette
-    crossover: str = "whole"        # whole | simple
-    mutation: str  = "non_uniform"  # uniform | non_uniform
+    
+    selection: str = "tournament"   
+    crossover: str = "whole"        
+    mutation: str  = "non_uniform"  
 
 
 class HybridPSOGASolver:
@@ -41,19 +41,17 @@ class HybridPSOGASolver:
         self.config = config or HybridConfig()
         self.rng = rng if rng is not None else np.random.default_rng()
 
-        # Search bounds used by mutation.
+       
         upper = scenario.demands.max() * 1.5
         self._pos_low = 0.0
         self._pos_high = float(upper)
 
-        # Resolve operators once at construction so bad names fail loudly.
+        
         self._select = get_selection(self.config.selection)
         self._cross = get_crossover(self.config.crossover)
         self._mutate = get_mutation(self.config.mutation)
 
-    # ------------------------------------------------------------------
-    # Main loop
-    # ------------------------------------------------------------------
+   
 
     def run(self, verbose: bool = False
             ) -> Tuple[np.ndarray, float, List[float], List[float]]:
@@ -61,7 +59,6 @@ class HybridPSOGASolver:
         pso_iters = max(1, int(cfg.iterations * cfg.pso_fraction))
         ga_iters = max(0, cfg.iterations - pso_iters)
 
-        # ---- Stage 1: PSO -------------------------------------------------
         pso_cfg = PSOConfig(
             pop_size=cfg.pop_size,
             iterations=pso_iters,
@@ -77,7 +74,7 @@ class HybridPSOGASolver:
         if ga_iters == 0:
             return pso_best_pos, pso_best_fit, history, diversity_history
 
-        # ---- Stage 2: seed GA with PSO swarm ------------------------------
+       
         population: List[np.ndarray] = [p.pbest_position.copy() for p in pso.swarm]
         fitness = np.array([
             fitness_function(repair_constraints(g, self.scenario), self.scenario)
@@ -89,7 +86,7 @@ class HybridPSOGASolver:
         if best_fit > pso_best_fit:
             best_pos, best_fit = pso_best_pos.copy(), pso_best_fit
 
-        # ---- Stage 3: GA refinement --------------------------------------
+        
         for it in range(ga_iters):
             new_pop = self._next_generation(population, fitness, it, ga_iters)
 
@@ -114,9 +111,6 @@ class HybridPSOGASolver:
 
         return best_pos, best_fit, history, diversity_history
 
-    # ------------------------------------------------------------------
-    # GA helpers
-    # ------------------------------------------------------------------
 
     def _next_generation(self, population: List[np.ndarray], fitness: np.ndarray,
                          current_iter: int, max_iter: int) -> List[np.ndarray]:
